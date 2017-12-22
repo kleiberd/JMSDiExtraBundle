@@ -75,12 +75,16 @@ class ControllerResolver extends BaseControllerResolver
      */
     protected function instantiateController($class)
     {
+        $controller = null;
+
         if ($this->container->has($class)) {
-            return $this->container->get($class);
+            $controller = $this->container->get($class);
         }
 
-        $injector = $this->createInjector($class);
-        $controller = call_user_func($injector, $this->container);
+        if (null === $controller) {
+            $injector = $this->createInjector($class);
+            $controller = call_user_func($injector, $this->container);
+        }
 
         if ($controller instanceof ContainerAwareInterface) {
             $controller->setContainer($this->container);
@@ -105,7 +109,7 @@ class ControllerResolver extends BaseControllerResolver
             // annotations, we need to bail out as this is handled by the service
             // container directly.
             if (null !== $metadata->getOutsideClassMetadata()->id
-                    && 0 !== strpos($metadata->getOutsideClassMetadata()->id, '_jms_di_extra.unnamed.service')) {
+                && 0 !== strpos($metadata->getOutsideClassMetadata()->id, '_jms_di_extra.unnamed.service')) {
                 return;
             }
 
